@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <string.h>
+
+// Function to perform Caesar shift with incrementing number
+void caesarShift(char *message, int startShift, char *shiftedMessage) {
+    int length = strlen(message);
+    for (int i = 0; i < length; i++) {
+        if (message[i] >= 'A' && message[i] <= 'Z') {  // Ensure character is within 'A'-'Z'
+            int shift = startShift + i;
+            shiftedMessage[i] = 'A' + (message[i] - 'A' + shift) % 26;
+        }
+    }
+    shiftedMessage[length] = '\0'; // Null-terminate the shifted string
+}
+
+// Function to perform the reverse Caesar shift with decrementing number
+void reverseCaesarShift(char *message, int startShift, char *shiftedMessage) {
+    int length = strlen(message);
+    for (int i = 0; i < length; i++) {
+        if (message[i] >= 'A' && message[i] <= 'Z') {  // Ensure character is within 'A'-'Z'
+            int shift = startShift + i;
+            shiftedMessage[i] = 'A' + (message[i] - 'A' - shift + 26) % 26;
+            // Handle wrap-around correctly: Ensure shifted character is within 'A' to 'Z'
+            if (shiftedMessage[i] < 'A') {
+                shiftedMessage[i] += 26; // Correct for negative wrap-around
+            }
+        }
+    }
+    shiftedMessage[length] = '\0'; // Null-terminate the shifted string
+}
+
+// Function to map the characters using a rotor
+void mapWithRotor(char *input, char *rotor, char *mappedOutput) {
+    int length = strlen(input);
+    for (int i = 0; i < length; i++) {
+        if (input[i] >= 'A' && input[i] <= 'Z') {  // Ensure character is within 'A'-'Z'
+            int index = input[i] - 'A';
+            mappedOutput[i] = rotor[index];
+        }
+    }
+    mappedOutput[length] = '\0'; // Null-terminate the mapped string
+}
+
+// Function to reverse map using a rotor
+void reverseMapWithRotor(char *input, char *rotor, char *mappedOutput) {
+    int length = strlen(input);
+    for (int i = 0; i < length; i++) {
+        if (input[i] >= 'A' && input[i] <= 'Z') {  // Ensure character is within 'A'-'Z'
+            char c = input[i];
+            for (int j = 0; j < 26; j++) {
+                if (rotor[j] == c) {
+                    mappedOutput[i] = 'A' + j;
+                    break;
+                }
+            }
+        }
+    }
+    mappedOutput[length] = '\0'; // Null-terminate the mapped string
+}
+
+int main() {
+    char mode[10]; // ENCODE or DECODE
+    int N; // Starting shift
+    char rotor1[27], rotor2[27], rotor3[27]; // Rotors with 26 characters + 1 for null terminator
+    char message[51]; // Message to encode or decode
+
+    // Reading input
+    scanf("%s", mode);
+    scanf("%d", &N);
+    scanf("%s", rotor1);
+    scanf("%s", rotor2);
+    scanf("%s", rotor3);
+    scanf("%s", message);
+
+    char result[51];
+
+    if (strcmp(mode, "ENCODE") == 0) {
+        // Encoding process
+        char shiftedMessage[51], rotor1Output[51], rotor2Output[51];
+
+        // Step 1: Apply Caesar shift with incrementing number
+        caesarShift(message, N, shiftedMessage);
+
+        // Step 2: Map through the first rotor
+        mapWithRotor(shiftedMessage, rotor1, rotor1Output);
+
+        // Step 3: Map through the second rotor
+        mapWithRotor(rotor1Output, rotor2, rotor2Output);
+
+        // Step 4: Map through the third rotor
+        mapWithRotor(rotor2Output, rotor3, result);
+    } else {
+        // Decoding process
+        char rotor2Output[51], rotor1Output[51], shiftedMessage[51];
+
+        // Step 1: Reverse map through the third rotor
+        reverseMapWithRotor(message, rotor3, rotor2Output);
+
+        // Step 2: Reverse map through the second rotor
+        reverseMapWithRotor(rotor2Output, rotor2, rotor1Output);
+
+        // Step 3: Reverse map through the first rotor
+        reverseMapWithRotor(rotor1Output, rotor1, shiftedMessage);
+
+        // Step 4: Apply reverse Caesar shift with decrementing number
+        reverseCaesarShift(shiftedMessage, N, result);
+    }
+
+    // Print the final output
+    printf("%s\n", result);
+
+    return 0;
+}
