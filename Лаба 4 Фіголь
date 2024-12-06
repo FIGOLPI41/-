@@ -1,0 +1,39 @@
+#include <openssl/md5.h> // Підключаємо бібліотеку OpenSSL для роботи з MD5
+#include <iomanip>
+#include <sstream>
+#include <string>
+
+// Функція для доповнення рядка символами '0' до заданої довжини
+std::string toLength(const std::string& s, int length) {
+    if (s.size() >= length) {
+        return s; // Якщо довжина рядка вже достатня, повертаємо його без змін
+    }
+    return std::string(length - s.size(), '0') + s; // Додаємо необхідну кількість '0' на початок
+}
+
+// Функція для зламу MD5-хешу методом грубої сили
+std::string crack(const std::string& hash) {
+    unsigned char md5buffer[MD5_DIGEST_LENGTH]; // Буфер для збереження MD5-хешу
+    char md5view[MD5_DIGEST_LENGTH * 2 + 1] = {}; // Масив для збереження хешу у шістнадцятковому форматі
+
+    // Перебираємо всі можливі значення від 00000 до 99999
+    for (int i = 0; i <= 99999; i++) {
+        // Формуємо рядок з числа, доповненого нулями до 5 символів
+        std::string candidate = toLength(std::to_string(i), 5);
+
+        // Обчислюємо MD5-хеш для рядка candidate
+        MD5(reinterpret_cast<const unsigned char*>(candidate.c_str()), candidate.size(), md5buffer);
+
+        // Форматуємо MD5-хеш як шістнадцятковий рядок
+        for (int j = 0; j < MD5_DIGEST_LENGTH; j++) {
+            sprintf(md5view + j * 2, "%02x", md5buffer[j]);
+        }
+
+        // Якщо хеш збігається з переданим hash
+        if (hash == std::string(md5view)) {
+            return candidate; // Повертаємо розшифроване значення
+        }
+    }
+
+    return ""; // Якщо не вдалося знайти збіг, повертаємо порожній рядок
+}
