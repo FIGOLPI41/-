@@ -1,0 +1,46 @@
+#include <string>
+#include <vector>
+
+// Функція для кодування тексту у бітову строку за допомогою повторення бітів
+std::string encode(const std::string& text) {
+    std::string encoded;
+    for (char ch : text) {
+        for (int i = 7; i >= 0; --i) {
+            // Визначаємо кожен біт символу
+            bool bit = (ch >> i) & 1;
+            // Додаємо повторення біта три рази
+            encoded += bit ? "111" : "000";
+        }
+    }
+    return encoded;
+}
+
+// Функція для декодування бітової строки назад у текст
+std::string decode(const std::string& bits) {
+    std::string decoded;
+    size_t length = bits.length();
+
+    if (length % 24 != 0) {
+        throw std::invalid_argument("Invalid encoded string length.");
+    }
+
+    for (size_t i = 0; i < length; i += 24) {
+        char ch = 0;
+        for (int j = 0; j < 8; ++j) {
+            int ones = 0;
+            int zeroes = 0;
+            // Підраховуємо кількість 1 і 0 у трьох бітах
+            for (int k = 0; k < 3; ++k) {
+                if (bits[i + j * 3 + k] == '1') {
+                    ++ones;
+                } else {
+                    ++zeroes;
+                }
+            }
+            // Визначаємо значення біта на основі більшості
+            ch = (ch << 1) | (ones > zeroes ? 1 : 0);
+        }
+        decoded += ch;
+    }
+    return decoded;
+}
