@@ -1,0 +1,70 @@
+import math
+
+def mod_exp(base, exp, mod):
+    """
+    Швидке піднесення до степеня за модулем.
+    """
+    result = 1
+    base %= mod
+    while exp > 0:
+        if exp % 2 == 1:
+            result = (result * base) % mod
+        exp //= 2
+        base = (base * base) % mod
+    return result
+
+def baby_step_giant_step(G, H, Q):
+    """
+    Алгоритм Baby-step Giant-step для розв'язання дискретного логарифма.
+    G: генератор
+    H: значення, для якого обчислюється логарифм
+    Q: модуль
+    """
+    m = math.isqrt(Q) + 1  # Визначаємо розмір кроку m
+    
+    # Baby-step: створюємо таблицю G^j % Q для j = 0, 1, ..., m-1
+    value_map = {}
+    for j in range(m):
+        value = mod_exp(G, j, Q)
+        value_map[value] = j
+    
+    # Giant-step: передобчислення G^(-m) % Q
+    Gm_inv = mod_exp(G, m * (Q - 2), Q)  # G^(-m) % Q
+    
+    # Шукаємо розв'язок
+    cur_value = H
+    for i in range(m):
+        if cur_value in value_map:
+            j = value_map[cur_value]
+            return i * m + j  # Рішення: X = i * m + j
+        # Оновлюємо значення для наступного Giant-step
+        cur_value = (cur_value * Gm_inv) % Q
+    
+    return -1  # Якщо розв'язок не знайдено
+
+def main():
+    """
+    Основна функція для отримання вхідних даних і запуску алгоритму.
+    """
+    try:
+        # Введення даних
+        G, H, Q = map(int, input().split())
+        
+        # Перевірка коректності введених даних
+        if Q <= 1:
+            print("Модуль Q має бути більше 1.")
+            return
+        
+        # Обчислення секретного ключа
+        secret_key = baby_step_giant_step(G, H, Q)
+        
+        # Виведення результату
+        if secret_key != -1:
+            print(secret_key)  # Тільки число
+        else:
+            print("Розв'язок не знайдено.")
+    except ValueError:
+        print("Некоректне введення. Будь ласка, введіть три цілі числа.")
+
+if __name__ == "__main__":
+    main()
