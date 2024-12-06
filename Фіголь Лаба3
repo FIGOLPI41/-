@@ -1,0 +1,49 @@
+// Функція для виконання XOR-операції між двома шістнадцятковими рядками
+const xor = (a, b) => {
+    if (a.length !== b.length) {
+        throw new Error("Рядки повинні бути однакової довжини");
+    }
+    
+    // Ініціалізуємо масив результату
+    const result = [];
+    
+    // Проходимо по кожному символу у рядках a і b
+    for (let i = 0; i < a.length; i++) {
+        // Виконуємо XOR для кожного символу a та b, конвертуючи з шістнадцяткового в десятковий
+        const xorResult = (parseInt(a[i], 16) ^ parseInt(b[i], 16)).toString(16);
+        result.push(xorResult);
+    }
+    
+    // Повертаємо шістнадцятковий рядок результату
+    return result.join('');
+};
+
+// Основна частина програми
+try {
+    // Зчитуємо три рядки вхідних даних
+    const input1 = readline().trim();
+    const input2 = readline().trim();
+    const input3 = readline().trim();
+
+    // Перевірка вхідних даних
+    if (![input1, input2, input3].every(str => /^[0-9a-fA-F]+$/.test(str))) {
+        throw new Error("Вхідні дані повинні бути шістнадцятковими рядками");
+    }
+
+    if (input1.length !== input2.length || input1.length !== input3.length) {
+        throw new Error("Усі рядки повинні бути однакової довжини");
+    }
+
+    // Виконуємо XOR-операції
+    const hexResult = xor(xor(input1, input2), input3);
+
+    // Перетворюємо результат з шістнадцяткового формату в текстовий формат
+    const textResult = hexResult.replace(/../g, byte => 
+        String.fromCharCode(parseInt(byte, 16))
+    );
+
+    // Виводимо результат
+    console.log(textResult);
+} catch (error) {
+    console.error("Помилка:", error.message);
+}
