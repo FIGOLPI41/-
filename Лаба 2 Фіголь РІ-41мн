@@ -1,0 +1,97 @@
+#include <iostream>
+#include <string>
+#include <cctype>
+#include <cmath>
+#include <limits>
+#include <algorithm>
+
+// Частота літер у англійській мові (%)
+const double ENGLISH_FREQUENCY[26] = {
+    8.08, 1.67, 3.18, 3.99, 12.56, 2.17, 1.80, 5.27, 7.24, 0.14,
+    0.63, 4.04, 2.60, 7.38, 7.47, 1.91, 0.09, 6.42, 6.59, 9.15,
+    2.79, 1.00, 1.89, 0.21, 1.65, 0.07
+};
+
+// Функція для обчислення частот символів у тексті
+void calculateFrequency(const std::string& text, double freq[26]) {
+    int totalLetters = 0;
+
+    // Очищуємо масив частот
+    std::fill(freq, freq + 26, 0.0);
+
+    // Обчислюємо кількість кожної літери
+    for (char c : text) {
+        if (std::isalpha(c)) {
+            c = std::tolower(c);
+            freq[c - 'a']++;
+            totalLetters++;
+        }
+    }
+
+    // Конвертуємо в проценти
+    if (totalLetters > 0) {
+        for (int i = 0; i < 26; i++) {
+            freq[i] = (freq[i] / totalLetters) * 100.0;
+        }
+    }
+}
+
+// Функція для обчислення відхилення частот (чим менше, тим краще)
+double calculateScore(const double freq[26]) {
+    double score = 0.0;
+
+    for (int i = 0; i < 26; i++) {
+        score += std::pow(freq[i] - ENGLISH_FREQUENCY[i], 2);
+    }
+
+    return score;
+}
+
+// Функція для декодування тексту із заданим зсувом
+void decodeWithShift(const std::string& encodedText, std::string& decodedText, int shift) {
+    decodedText = encodedText; // Копіюємо текст
+
+    for (size_t i = 0; i < encodedText.length(); ++i) {
+        char c = encodedText[i];
+        if (std::isalpha(c)) {
+            char base = std::islower(c) ? 'a' : 'A';
+            decodedText[i] = (c - base - shift + 26) % 26 + base; // Застосування зсуву
+        }
+    }
+}
+
+int main() {
+    // Зчитування закодованого повідомлення
+    std::string encodedMessage;
+    std::getline(std::cin, encodedMessage);
+
+    // Змінні для пошуку найкращого розшифрованого результату
+    std::string bestDecodedMessage;
+    double bestScore = std::numeric_limits<double>::max();
+    double freq[26];
+
+    // Перебираємо всі можливі зсуви (0-25)
+    for (int shift = 0; shift < 26; ++shift) {
+        std::string decodedMessage;
+
+        // Декодуємо текст із поточним зсувом
+        decodeWithShift(encodedMessage, decodedMessage, shift);
+
+        // Розраховуємо частоти літер у розшифрованому тексті
+        calculateFrequency(decodedMessage, freq);
+
+        // Оцінюємо текст на основі частотного відхилення
+        double score = calculateScore(freq);
+
+        // Якщо оцінка краще, зберігаємо результат
+        if (score < bestScore) {
+            bestScore = score;
+            bestDecodedMessage = decodedMessage;
+        }
+    }
+
+    // Виведення найкращого розшифрованого тексту
+    std::cout << bestDecodedMessage << std::endl;
+
+    return 0;
+}
